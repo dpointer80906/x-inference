@@ -38,4 +38,7 @@ or even
 ```
 10000000 => 01100100
 ```
-if the bits are representing ABCDEFGH from left to right.
+if the bits are representing ABCDEFGH from left to right. I understand rule execution order is important, so
+maybe the second form is not so useful. Unless I could impose an ordering on processing? Experimentation is needed. Whole
+heap o' tradeoffs already.
+
