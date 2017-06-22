@@ -21,24 +21,34 @@ low performance impact relative to rules processing. We'll see.
 Let's start with forward chaining (why not?), straight symbol manipulation, cycling through three
 sequential steps: match rules, select rules, and execute rules.
 
-I'm thinking this can get away with only using a single bit position for the LHS and a single bit position for the RHS
-(RHS: to start, at least.) So in A=>B, A and B both are represented by a single bit position. The tiny example
+1. **Match Rules** Find all rules triggered by current knowledgebase contents.  
+2. **Select Rules** Prioritize matched rules to determine execution order.  
+3. **Execute Rules** Execute each matched rule, obtain new facts for knowledgebase.
+4. **Exit** When step 1 no longer has any matches.
+
+Now, I'm not certain exactly what all of that means or how to implement it, and in the best Agile manner,
+I'm going to figure it out as I go along. 
+
+Let's start with an antecedents (LHS) array, where each antecedent id identified by its array index. The contents
+of each array element is a set of 16 consequents for that antecedent. I think execution order is dynamic and
+created each step 2, so let's make the execution order an array of masks for the consequents.
+
+![Inference Rules](./doc/rules.jpg)
+
+If I have a rule ```if A then B|C|F``` and I did not care about execution order, then I would store this as
+```
+antcedents[0] = 0x6400;
+```
+If I cared about order, let's say
 ```
 A=>B
 A=>C
 A=>F
 ```
-could be represented by two bytes
+then I would have three execution order masks:
 ```
-10000000 => 01000000
-10000000 => 00100000
-10000000 => 00000100
+masks[0] = 0x4000;
+masks[1] = 0x2000;
+masks[2] = 0x0400;
 ```
-or even
-```
-10000000 => 01100100
-```
-if the bits are representing ABCDEFGH from left to right. I understand rule execution order is important, so
-maybe the second form is not so useful. Unless I could impose an ordering on processing? Experimentation is needed. Whole
-heap o' tradeoffs already.
-
+Each antecedent would need some number of masks, so maybe use a linked list of mask arrays?
