@@ -1,5 +1,6 @@
 from unittest import TestCase
 from Database import Database
+import sqlite3
 
 VALID_DB_NAME = '/Applications/PyCharm.app/Contents/bin/fow.sqlite'
 INVALID_DB_NAME = '/Applications/PyCharm.app/Contents/bin/fow.sqlit'
@@ -26,6 +27,7 @@ class TestDatabase(TestCase):
         database = Database(VALID_DB_NAME)
         tank = database.select_tank('Pz')
         self.assertTrue(tank is None)
+        self.assertRaises(sqlite3.Error)
         database.disconnect()
 
     def test_select_tank_invalid_db_valid_name(self):
@@ -34,6 +36,7 @@ class TestDatabase(TestCase):
         database = Database(INVALID_DB_NAME)
         tank = database.select_tank('Panzer IV H')
         self.assertTrue(tank is None)
+        self.assertRaises(sqlite3.Error)
         database.disconnect()
 
     def test_select_tank_valid_db_valid_name(self):
@@ -56,3 +59,4 @@ class TestDatabase(TestCase):
         database = Database(VALID_DB_NAME)
         database.disconnect()
         _ = database.select_tank('Panzer IV H')
+        self.assertRaises(sqlite3.Error)
