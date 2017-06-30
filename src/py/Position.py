@@ -27,12 +27,12 @@ class Position(object):
     @property
     def cos_angle(self):
         '''float: convenience function providing cosine of current angle.'''
-        return math.cos(self.angle * 0.01745329252)
+        return math.cos(math.radians(self.angle))
 
     @property
     def sin_angle(self):
         '''float: convenience function providing sine of current angle.'''
-        return math.sin(self.angle * 0.01745329252)
+        return math.sin(math.radians(self.angle))
 
     @property
     def half_front(self):
