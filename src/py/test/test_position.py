@@ -3,6 +3,7 @@ from Position import Position
 from Coord import Coord
 import math
 
+INITIAL_RECT_COORDS = [Coord(4.25, 3.6), Coord(4.25, 2.4), Coord(1.75, 2.4), Coord(1.75, 3.6)]
 
 class TestPosition(TestCase):
 
@@ -38,15 +39,26 @@ class TestPosition(TestCase):
         self.assertEqual(self.position.half_side, self.side/2.0)
 
     def test_rect_coords(self):
-        init = Coord(0.0, 0.0)
-        self.assertEqual(self.position.rect_coords['front_left'].x, init.x)
-        self.assertEqual(self.position.rect_coords['front_left'].y, init.y)
-        self.assertEqual(self.position.rect_coords['front_right'].x, init.x)
-        self.assertEqual(self.position.rect_coords['front_right'].y, init.y)
-        self.assertEqual(self.position.rect_coords['rear_right'].x, init.x)
-        self.assertEqual(self.position.rect_coords['rear_right'].y, init.y)
-        self.assertEqual(self.position.rect_coords['rear_left'].x, init.x)
-        self.assertEqual(self.position.rect_coords['rear_left'].y, init.y)
+        '''Init class with the default values, then check that the rect_coords property was initialized properly.'''
+        expected = INITIAL_RECT_COORDS
+        actual = []
+        position = Position(self.coord, self.angle, self.front, self.side)
+        for vertex in ['front_left', 'front_right', 'rear_right', 'rear_left']:
+            actual.append(Coord(position.rect_coords[vertex].x, position.rect_coords[vertex].y))
+        for idx in range(0, len(expected)):
+            self.assertAlmostEqual(actual[idx].x, expected[idx].x, places=3)
+            self.assertAlmostEqual(actual[idx].y, expected[idx].y, places=3)
+
+    def test__set_center(self):
+        '''Change the center coords and check it got changed.'''
+        position = Position(self.coord, self.angle, self.front, self.side)
+        self.assertEqual(position.center.x, self.x)
+        self.assertEqual(position.center.y, self.y)
+        x = 3.5
+        y = 3.5
+        position._set_center(Coord(x, y))
+        self.assertEqual(position.center.x, x)
+        self.assertEqual(position.center.y, y)
 
     def test__rotate(self):
         position = Position(self.coord, self.angle, self.front, self.side)
