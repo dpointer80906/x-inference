@@ -1,5 +1,6 @@
 '''Two-dimensional x,y coordinate services.
 '''
+import math
 
 
 class Coord(object):
@@ -49,3 +50,49 @@ class Coord(object):
 
     def __init__(self, x, y):
         self._xy = (x, y)
+
+
+class PolarCoord(Coord):
+    '''Adds angle services to x,y coordinate class.
+
+    '''
+    @property
+    def vector(self):
+        '''tuple(float, float, float): '''
+        return (self.x, self.y, self.angle)
+
+    @property
+    def angle(self):
+        '''float: orientation of line normal to tank front relative to origin of playing field (degrees)'''
+        return self._angle
+
+    @property
+    def cos_angle(self):
+        '''float: convenience function providing cosine of current angle.'''
+        return math.cos(math.radians(self.angle))
+
+    @property
+    def sin_angle(self):
+        '''float: convenience function providing sine of current angle.'''
+        return math.sin(math.radians(self.angle))
+
+    def set_vector(self, new_vector):
+        '''
+
+        Args:
+            vector <PolarCoord>:
+        '''
+        self.set_xy(new_vector.x, new_vector.y)
+        self._angle = new_vector.angle
+
+    def __init__(self, x, y, angle):
+        super().__init__(x, y)
+        self._angle = angle
+
+
+    def _set_vector(self, new_vector):
+        '''Change the value of the vector property to new_vector.
+        Args:
+            new_vector <Coord.PolarCoord>: x,y,angle coordinates from center of tank (inches, degrees).
+        '''
+        self.vector.set_vector(new_vector)

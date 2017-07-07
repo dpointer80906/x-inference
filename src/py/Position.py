@@ -1,110 +1,70 @@
 '''Manage the position state of one tank team.
 '''
-import math
-import Coord
+from Coord import Coord
 
 
 class Position(object):
     '''Provide position services for a single tank.
 
     Args:
-        center (<Coord>): initial x,y coordinates of center of tank (inches)
-        angle (float): initial orientation of tank front (degrees)
-        dim_front (float): length of tank front & rear (inches)
-        dim_side (float): length of tank sides (inches)
+        vector (<Coord.PolarCoord>): initial x,y,angle coordinates from center of tank (inches, degrees).
+        front (float): length of tank front & rear (inches)
+        side (float): length of tank sides (inches)
     '''
 
     @property
-    def center(self):
-        '''<Coord>: x,y coordinates of center of tank (inches).'''
-        return self._center
+    def vector(self):
+        '''<Coord.PolarCoord>: x,y,angle coordinates from center of tank (inches).'''
+        return self._vector
 
     @property
-    def angle(self):
-        '''float: orientation of line normal to tank front relative to origin of playing field (degrees)'''
-        return self._angle
+    def dim(self):
+        '''dict: front and side dimensions of tank (inches). keys: [front, side].'''
+        return self._dim
 
     @property
-    def cos_angle(self):
-        '''float: convenience function providing cosine of current angle.'''
-        return math.cos(math.radians(self.angle))
+    def vertices(self):
+        '''dict: x,y of the four tank vertices. keys:[front_left, front_right, rear_right, rear_left].'''
+        return self._vertices
 
-    @property
-    def sin_angle(self):
-        '''float: convenience function providing sine of current angle.'''
-        return math.sin(math.radians(self.angle))
+    def _set_vertices(self):
+        '''Calculate the tank bounding rectangle vertex points given current class properties.
+        '''
+        def rotate(unrot_point):
+            '''Rotate a given x,y point by current angle property.
 
-    @property
-    def half_front(self):
-        '''float: halved length of tank front or rear (inches).'''
-        return self._half_front
+            Args:
+                unrot_point (<Coord>): unrotated point to rotate by angle.
+            Returns:
+                <Coord>: unrot_point rotated by angle.
+            '''
+            normalized = Coord(unrot_point.x - self.vector.x, unrot_point.y - self.vector.y)
+            xp = (normalized.x * self.vector.cos_angle - normalized.y * self.vector.sin_angle) + self.vector.x
+            yp = (normalized.y * self.vector.cos_angle + normalized.x * self.vector.sin_angle) + self.vector.y
+            return Coord(xp, yp)
 
-    @property
-    def half_side(self):
-        '''float: halved length of tank sides (inches).'''
-        return self._half_side
+        half_front = self.dim['front']/2.0
+        half_side = self.dim['side']/2.0
+        unrot_front_left = Coord(self.vector.x - half_front, self.vector.y + half_side)
+        unrot_front_right = Coord(self.vector.x + half_front, self.vector.y + half_side)
+        unrot_rear_right = Coord(self.vector.x + half_front, self.vector.y - half_side)
+        unrot_rear_left = Coord(self.vector.x - half_front, self.vector.y - half_side)
+        self._vertices['front_left'] = rotate(unrot_front_left)
+        self._vertices['front_right'] = rotate(unrot_front_right)
+        self._vertices['rear_right'] = rotate(unrot_rear_right)
+        self._vertices['rear_left'] = rotate(unrot_rear_left)
 
-    @property
-    def rect_coords(self):
-        '''dict: current x,y positions of the four tank bounding rectangle vertices.'''
-        return self._rect_coords
-
-    def _set_center(self, new_center):
-        '''Change the value of the center property to new_center.
+    def update(self, new_vector):
+        '''Update the vector property of this tank, then update the vertices property.
 
         Args:
-            new_center <Coord>: x,y coordinates of center of tank (inches).
+            new_vector (<Coord.PolarCoord>): new x,y coordinates of vector of tank (inches).
         '''
-        self._center = self.center.set_xy(new_center.x, new_center.y)
+        self._vector.set_vector(new_vector)
+        self._set_vertices()
 
-    def _set_angle(self, new_angle):
-        '''Change the value of the angle property to new_angle.
-
-        Args:
-            new_angle (float): new tank front orientation.
-        '''
-        self._angle = new_angle
-
-    def _rotate(self, unrot_point):
-        '''Rotate a given x,y point by current angle.
-
-        Args:
-            unrot_point (<Coord>): unrotated point to rotate by angle.
-        Returns:
-            <Coord>: unrot_point rotated by angle.
-        '''
-        normalized = Coord.Coord(unrot_point.x - self.center.x, unrot_point.y - self.center.y)
-        xp = (normalized.x * self.cos_angle - normalized.y * self.sin_angle) + self.center.x
-        yp = (normalized.y * self.cos_angle + normalized.x * self.sin_angle) + self.center.y
-        return Coord.Coord(xp, yp)
-
-    def _set_rect_coords(self):
-        '''Calculate the tank bounding rectangle vertex points and update rect_coords property.
-        '''
-        unrot_front_left = Coord.Coord(self.center.x - self.half_front, self.center.y + self.half_side)
-        unrot_front_right = Coord.Coord(self.center.x + self.half_front, self.center.y + self.half_side)
-        unrot_rear_right = Coord.Coord(self.center.x + self.half_front, self.center.y - self.half_side)
-        unrot_rear_left = Coord.Coord(self.center.x - self.half_front, self.center.y - self.half_side)
-        self._rect_coords['front_left'] = self._rotate(unrot_front_left)
-        self._rect_coords['front_right'] = self._rotate(unrot_front_right)
-        self._rect_coords['rear_right'] = self._rotate(unrot_rear_right)
-        self._rect_coords['rear_left'] = self._rotate(unrot_rear_left)
-
-    def update(self, new_center, new_angle):
-        '''Update the center, angle and rectangle vertex position properties of this tank.
-
-        Args:
-            new_center (<Coord>): the new center coordinates for this tank.
-            new_angle (float): the new front armor angle for this tank, in degrees.
-        '''
-        self._set_center(new_center)
-        self._set_angle(new_angle)
-        self._set_rect_coords()
-
-    def __init__(self, center, angle, dim_front, dim_side):
-        self._center = center
-        self._angle = angle
-        self._half_front = dim_front/2.0
-        self._half_side = dim_side/2.0
-        self._rect_coords = {}
-        self._set_rect_coords()
+    def __init__(self, vector, front, side):
+        self._vector = vector
+        self._dim = {'front': front, 'side': side}
+        self._vertices = {}
+        self._set_vertices()
