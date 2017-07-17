@@ -1,8 +1,8 @@
 '''
 
 '''
-import Database
-import TankTeam
+import TankTeamPlatoon
+import pprint
 
 
 def main():
@@ -11,10 +11,11 @@ def main():
     Returns:
 
     '''
-    database = Database.Database('/Applications/PyCharm.app/Contents/bin/fow.sqlite')
-    tank_teams = {}
-    tank_teams['Panzer IV H'] = TankTeam.TankTeam(database.select_tank('Panzer IV H'))
-    print(tank_teams['Panzer IV H'].name )
+    name = 'Panzer IV H'
+    friendly_platoon = TankTeamPlatoon.TankTeamPlatoon(name, (1, 1, 1), 'confident', 'veteran', 'friendly')
+    enemy_platoon = TankTeamPlatoon.TankTeamPlatoon(name, (3, 1, 1), 'confident', 'veteran', 'enemy')
+    pprint.pprint(friendly_platoon.state[111].position.current())
+    pprint.pprint(enemy_platoon.state[311].position.current())
 
 
 if __name__ == "__main__":

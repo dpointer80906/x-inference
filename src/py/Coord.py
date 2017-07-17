@@ -88,11 +88,3 @@ class PolarCoord(Coord):
     def __init__(self, x, y, angle):
         super().__init__(x, y)
         self._angle = angle
-
-
-    def _set_vector(self, new_vector):
-        '''Change the value of the vector property to new_vector.
-        Args:
-            new_vector <Coord.PolarCoord>: x,y,angle coordinates from center of tank (inches, degrees).
-        '''
-        self.vector.set_vector(new_vector)
